@@ -1,3 +1,6 @@
+import threading
+import time
+
 class Robot:
     """Robot class for robot control"""
     
@@ -19,7 +22,7 @@ class Robot:
     def initializeServos(self):
         kitCheck = True
         if len(self.servoKits) > 0:
-            kitCheck = False
+            kitCheck += 0x01
         for kit in self.servoKits:
                 if kit == None:
                     kitCheck = False

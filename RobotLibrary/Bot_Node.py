@@ -1,4 +1,5 @@
 #import Robot
+
 class Bot_Node:
     """Node class for the bot structure"""
     def __init__(self, label = "botNode",parent = None, kitID = 0, 
@@ -29,27 +30,28 @@ class Bot_Node:
         else:
             print("Cannot move to angle:" + angle);
             print("\tAngle must fall withing range: 0, " + self.acactuation_range);
+        return self
     
     def updateStep(self, deltaTime):
         if (self.robot is not None and self.robot.servoKits is not None and
-        len(self.robot.servoKits) < self.kitID and self.robot.servoKits[self.kitID] is not None):
+        len(self.robot.servoKits) > self.kitID and self.robot.servoKits[self.kitID] is not None):
             diff = self.destinationPos - self.currentPos
             maxStep = self.speed * deltaTime
             step = 1.0 * diff
             if abs(diff) > maxStep:
                 step = diff * ((diff < 0.0)*-1.0)
             self.currentPos += step
-            self.robot.servoKits[self.kitID].servo[self.servoID] = self.currentPos
+            self.robot.servoKits[self.kitID].servo[self.servoID].angle = self.currentPos
         else:
             cause = "\t"
             if self.robot is not None:
                 cause += "Robot servoKit not defined or initialized"
-            if robot.servoKits is not None:
+            if self.robot.servoKits is not None:
                 cause += "Robot servoKit not defined or initialized"
-            if len(robot.servoKits) < self.kitID:
+            if len(self.robot.servoKits) < self.kitID:
                 cause += "kitID outside bounds"
-            if robot.servoKits[self.kitID] is not None:
-                cause += "kitID(" + self.kitID + ") not available or initialized"
+            if self.robot.servoKits[self.kitID] is None:
+                cause += "kitID(" + str(self.kitID) + ") not available or initialized"
             print("Error occured updating node '" + self.label + "'\n" + cause)
     
     def addChild(self, label = "childNode", kitID = 0, servoID = 0):
@@ -59,6 +61,19 @@ class Bot_Node:
         return newNode
     
     def printStructure(self, depth, full = False):
+        self.printNode(depth = depth, full = full)
+        if len(self.children) > 0:
+            for child in self.children:
+                child.printStructure(depth + 1, full)
+                    
+    def getList(self):
+        rlist = [self]
+        if len(self.children) > 0:
+            for child in self.children:
+                rlist.extend(child.getList())
+        return rlist
+    
+    def printNode(self, depth = 0, full = False):
         print (" - "*depth + self.label)
         if full:
             if self.parent is None:
@@ -70,17 +85,7 @@ class Bot_Node:
             print (" - "*depth + "|-> restPos       : " + str(self.restPos))
             print (" - "*depth + "|-> offset        : " + str(self.offset))
             print (" - "*depth + "|-> actuationRange: " + str(self.actuation_range))
-        if len(self.children) > 0:
-            for child in self.children:
-                child.printStructure(depth + 1, full)
-                    
-    def getList(self):
-        rlist = [self]
-        if len(self.children) > 0:
-            for child in self.children:
-                rlist.extend(child.getList())
-        return rlist
-            
+        
     def getNode(self, nodeName):
         if self.label == nodeName:
             return self
