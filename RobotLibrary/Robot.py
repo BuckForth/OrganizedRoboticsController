@@ -4,11 +4,11 @@ import time
 class Robot:
     """Robot class for robot control"""
     
-    def __init__(self, servoKits = [], refreshRate = 60, name = "newRobot"):
+    def __init__(self, servoKits = [], frequency = 50, name = "newRobot"):
         self.name = name
         self.servoKits = servoKits
         self.root = None
-        self.refreshRate = refreshRate
+        self.frequency = frequency
         
     def servoDriver_thread(self):
         self.active = True
@@ -16,8 +16,8 @@ class Robot:
             nodes = self.root.getList()
             for node in nodes:
                 node.robot = self
-                node.updateStep(deltaTime = 1.0/self.refreshRate)
-            time.sleep(1.0/self.refreshRate)
+                node.updateStep(deltaTime = 1.0/self.frequency)
+            time.sleep(1.0/self.frequency)
     
     def initializeServos(self):
         kitCheck = True
@@ -27,6 +27,16 @@ class Robot:
                 if kit == None:
                     kitCheck = False
         if kitCheck:
+            #Initialize Positions
+            nodes = self.getNodeList()
+            for node in nodes:
+                node.currentPos = node.restPos
+                if (node.currentPos < 0):
+                    node.currentPos = 0
+                if (node.currentPos > node.actuation_range):
+                    node.currentPos = node.actuation_range
+                node.destinationPos = node.currentPos
+                    
             #Start servo update thread
             self.thread = threading.Thread(target=self.servoDriver_thread, daemon=True)
             self.thread.start()

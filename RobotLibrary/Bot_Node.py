@@ -35,6 +35,11 @@ class Bot_Node:
     def updateStep(self, deltaTime):
         if (self.robot is not None and self.robot.servoKits is not None and
         len(self.robot.servoKits) > self.kitID and self.robot.servoKits[self.kitID] is not None):
+            #self.currentPos = self.robot.servoKits[self.kitID].servo[self.servoID].angle
+            if (self.currentPos < 0):
+                self.currentPos = 0
+            if (self.currentPos > self.actuation_range):
+                self.currentPos = self.actuation_range
             diff = self.destinationPos - self.currentPos
             maxStep = self.speed * deltaTime
             step = 1.0 * diff
@@ -42,6 +47,7 @@ class Bot_Node:
                 step = diff * ((diff < 0.0)*-1.0)
             self.currentPos += step
             self.robot.servoKits[self.kitID].servo[self.servoID].angle = self.currentPos
+            #print("Angle update")
         else:
             cause = "\t"
             if self.robot is not None:
@@ -54,9 +60,9 @@ class Bot_Node:
                 cause += "kitID(" + str(self.kitID) + ") not available or initialized"
             print("Error occured updating node '" + self.label + "'\n" + cause)
     
-    def addChild(self, label = "childNode", kitID = 0, servoID = 0):
+    def addChild(self, label = "childNode", kitID = 0, servoID = 0, restPos = 0.0):
         newNode = Bot_Node(robot = self.robot, label = label, kitID = kitID,
-                           servoID = servoID, parent = self)
+                           servoID = servoID, parent = self, restPos = restPos)
         self.children.append(newNode);
         return newNode
     
