@@ -42,9 +42,11 @@ class Bot_Node:
                 self.currentPos = self.actuation_range
             diff = self.destinationPos - self.currentPos
             maxStep = self.speed * deltaTime
-            step = 1.0 * diff
-            if abs(diff) > maxStep:
-                step = diff * ((diff < 0.0)*-1.0)
+            step = maxStep
+            if diff < 0:
+                step *= -1.0
+            if abs(diff) < abs(maxStep):
+                step = diff
             self.currentPos += step
             self.robot.servoKits[self.kitID].servo[self.servoID].angle = self.currentPos
             #print("Angle update")
