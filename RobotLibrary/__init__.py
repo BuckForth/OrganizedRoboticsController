@@ -1,7 +1,9 @@
 import RobotLibrary.Bot_Node
 import RobotLibrary.Robot
+import RobotLibrary.Pose
 from adafruit_servokit import ServoKit
 from RobotLibrary.Robot import Robot as Robot
+from RobotLibrary.Pose import Pose as Pose
 from RobotLibrary.Bot_Node import Bot_Node as Bot_Node
 
 def RoBoi() -> Robot:
@@ -49,9 +51,9 @@ def RoBoi() -> Robot:
     #robot.getNode("Thumb_Rotate_Left").addChild(label = "Thumb_1_Left",     servoID = 15)
     #Right arm
     robot.getNode("Neck_Pan").addChild(          label = "Shoulder_X_Right",  kitID = 1, servoID = 8, restPos = 0)
-    robot.getNode("Shoulder_X_Right").addChild(  label = "Shoulder_Z_Right",  kitID = 1, servoID = 7, restPos = 60)
-    #robot.getNode("Shoulder_Z_Right").addChild(  label = "Shoulder_Y_Right",  kitID = 1, servoID = 9)
-    #robot.getNode("Shoulder_Y_Right").addChild(  label = "Elbow_X_Right",     kitID = 1, servoID = 10)
+    robot.getNode("Shoulder_X_Right").addChild(  label = "Shoulder_Z_Right",  kitID = 1, servoID = 7, restPos = 135)
+    robot.getNode("Shoulder_Z_Right").addChild(  label = "Shoulder_Y_Right",  kitID = 1, servoID = 6, restPos = 60)
+    robot.getNode("Shoulder_Y_Right").addChild(  label = "Elbow_X_Right",     kitID = 1, servoID = 5, restPos = 100)
     #robot.getNode("Elbow_X_Right").addChild(     label = "Wrist_Y_Right",     kitID = 1, servoID = 11)
     #robot.getNode("Wrist_Y_Right").addChild(     label = "Finger_1_Right",    kitID = 1, servoID = 12)
     #robot.getNode("Wrist_Y_Right").addChild(     label = "Finger_2_Right",    kitID = 1, servoID = 13)
