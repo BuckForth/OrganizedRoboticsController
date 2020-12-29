@@ -29,14 +29,7 @@ class Robot:
         if kitCheck:
             #Initialize Positions
             nodes = self.getNodeList()
-            for node in nodes:
-                node.currentPos = node.restPos
-                if (node.currentPos < 0):
-                    node.currentPos = 0
-                if (node.currentPos > node.actuation_range):
-                    node.currentPos = node.actuation_range
-                node.destinationPos = node.currentPos
-                    
+              
             #Start servo update thread
             self.thread = threading.Thread(target=self.servoDriver_thread, daemon=True)
             self.thread.start()

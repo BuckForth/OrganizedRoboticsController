@@ -1,10 +1,32 @@
 import RobotLibrary
 import time
 import tkinter as tk
+import pickle
+from pathlib import Path
 from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog
-         
+
+class poseAppConfig:
+    def __init__(self):
+        self.lastRobotConfigPath = "/"
+        self.robotConfigCache = None
+        self.lastRobotPosePath = "/"
+        
+    def writeConfig(self, filename):
+        with open(fileName, 'rb') as input:
+            pickle.dump(self, output, pickle.HIGHEST_PROTOCOL)
+        
+            
+    def loadConfig(self, filename):
+        with open(fileName, 'rb') as input:
+            loadedData = pickle.load(input).lastRobotConfigPath
+            self.lastRobotConfigPath = loadedData.lastRobotConfigPath
+            self.robotConfigCache = loadedData.robotConfigCache
+            self.lastRobotPosePath = loadedData.lastRobotPosePath
+        
+        
+    
 class PoseEditor:
     def updateNodes(self, event):
         for sliderNode in self.sliderNodes:
@@ -58,23 +80,27 @@ class PoseEditor:
         self.activeBotNode = self.robot.root
         self.sliderNodes = []
         self.workingDir = lastOpenedDir
+        self.robot.root.loud = True
 #Build UI
         ii = 0
         coloumCount = 3
         for node in self.nodes:
-            frame = Frame(root)
-            ttk.Label(frame, text = node.label).grid(column = 0, row = 0)
-            slider = Scale(frame, from_=0, to=node.actuation_range, orient=HORIZONTAL, command = self.updateNodes, length = 160)
-            slider.set(node.restPos)
-            slider.grid(column = 1, row = 0)
-            frame.grid(column = ii % coloumCount, row = 1 + (ii // coloumCount))
-            self.sliderNodes.append([slider,node])
-            ii = ii + 1
+            if(type(node) is RobotLibrary.Servo_Node):
+                frame = Frame(root)
+                ttk.Label(frame, text = node.label).grid(column = 0, row = 0)
+                slider = Scale(frame, from_=0, to=node.actuation_range, orient=HORIZONTAL, command = self.updateNodes, length = 160)
+                slider.set(node.restPos)
+                slider.grid(column = 1, row = 0)
+                frame.grid(column = ii % coloumCount, row = 1 + (ii // coloumCount))
+                self.sliderNodes.append([slider,node])
+                ii = ii + 1
         
-        writePosButton = Button(root, text = "Save Pose", command = self.writePose)
+        IOFrame = hierarchyFrame = ttk.Frame(root)
+        writePosButton = Button(IOFrame, text = "Save Pose", command = self.writePose)
         writePosButton.grid(column = 0, row = 0)
-        loadPosButton = Button(root, text = "Load Pose", command = self.loadPose)
+        loadPosButton = Button(IOFrame, text = "Load Pose", command = self.loadPose)
         loadPosButton.grid(column = coloumCount - 1, row = 0)
+        IOFrame.grid(column = 0, row = 0)
         self.robot.initializeServos()
     
 
