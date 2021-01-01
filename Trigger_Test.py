@@ -1,14 +1,15 @@
 import RobotLibrary as RL
 import time
+from picamera import PiCamera
 from adafruit_servokit import ServoKit
 
-
+camera = PiCamera()
 
 trigger_robot = RL.RoBoi()
 trigger_robot.printStructure()
-trigger_robot.root.loud = True
-
+camera.start_preview()
 trigger_robot.initializeServos()
 time.sleep(4)
+camera.stop_preview()
 trigger_robot.disengage()
 print("end")
