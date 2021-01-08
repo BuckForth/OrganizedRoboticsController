@@ -2,7 +2,7 @@ sudo apt-get -y purge wolfram-engine
 sudo apt-get -y purge libreoffice*
 sudo apt-get -y clean
 sudo apt-get -y autoremove
-echo "OpenCV installation by BuckForth cause  learnOpenCV.com cant make a website to save their god damn life"
+echo "Auto install openCV by BuckForth (Inspired by: learnOpenCV.com)"
 cvVersion="master"
 
 # install the dependencies
@@ -94,3 +94,8 @@ sudo /etc/init.d/dphys-swapfile stop
 sudo /etc/init.d/dphys-swapfile start
 
 echo "sudo modprobe bcm2835-v4l2" >> ~/.profile
+
+cd ..
+cd ..
+sudp pip install opencv-python-headless
+sudp pip install opencv-python
