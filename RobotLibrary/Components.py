@@ -1,6 +1,7 @@
 #import Robot
 import smbus
 import math
+from adafruit_servokit import ServoKit
 
 #Standard Bot_Node Structural Component
 class Component:
@@ -15,13 +16,13 @@ class Component:
             self.robot = robot
     
     def initialize(self, robot):
-        robot.log("initialized component %s as:\n\t%s"%(self.label,str(type(self))))
+        self.robot.log("initialized component %s as:\n\t%s"%(self.label,str(type(self))),0)
     
     def setData(self, data):
-        self.robot.log("Setting component %s(%s) data to %s(%s)" % (self.label,str(type(self)),str(data),str(type(data))))
+        self.robot.log("Setting component %s(%s) data to %s(%s)" % (self.label,str(type(self)),str(data),str(type(data))),0)
     
     def updateStep(self, deltaTime):
-        self.robot.log("Updating component %s(%s) after %.4f(secs)" % (self.label,str(type(self)),deltaTime))
+        self.robot.log("Updating component %s(%s) after %.4f(secs)" % (self.label,str(type(self)),deltaTime),0)
     
     def addChild(self, child):
         child.parent = self
@@ -76,10 +77,17 @@ class Component:
     #Rotates along axis
 class Servo_Node(Component):
     """Node class for the bot structure"""
-    def __init__(self, label = "botNode",parent = None, kitID = 0, 
+    def __init__(self, label = "botNode",parent = None, kitAddress = 0x40, 
     servoID = 0, restPos = 0.0, robot = None, actuation_range = 180, mirror = False):
-        super().__init__(label = label, parent = parent)
-        self.kitID = kitID
+        super(Servo_Node, self).__init__(label = label, parent = parent, robot = robot)
+        #init Servokit PMW
+        self.servoKit = None
+        try:
+            kit = ServoKit(channels = 16, address=kitAddress)
+            kit.frequency = 50
+        except Exception as e:
+            self.robot.log("An error occurred defining servo kit\n" + str(e))
+            return
         self.servoID = servoID
         self.restPos = restPos
         self.actuation_range = actuation_range
@@ -92,6 +100,7 @@ class Servo_Node(Component):
         self.offset = 0.0
         self.speed = 0.0
         self.mirror = mirror
+        return
                   
     def moveAngle(self, angle, speed):
         if angle >= 0 and angle <= self.actuation_range:
@@ -105,9 +114,8 @@ class Servo_Node(Component):
         return self
     
     def updateStep(self, deltaTime):
-        super(deltaTime)
-        if (self.robot is not None and self.robot.servoKits is not None and
-        len(self.robot.servoKits) > self.kitID and self.robot.servoKits[self.kitID] is not None):
+        super()
+        if (self.robot is not None and self.servoKit is not None):
             #self.currentPos = self.robot.servoKits[self.kitID].servo[self.servoID].angle
             if (self.currentPos < 0):
                 self.currentPos = 0
@@ -121,19 +129,15 @@ class Servo_Node(Component):
             if abs(diff) < abs(maxStep):
                 step = diff
             self.currentPos += step
-            self.robot.servoKits[self.kitID].servo[self.servoID].angle = self.currentPos
+            self.servoKit.servo[self.servoID].angle = self.currentPos
             #print("Angle update")
         else:
             cause = "\t"
-            if self.robot is not None:
-                cause += "Robot servoKit not defined or initialized"
-            if self.robot.servoKits is not None:
-                cause += "Robot servoKit not defined or initialized"
-            if len(self.robot.servoKits) < self.kitID:
-                cause += "kitID outside bounds"
-            if self.robot.servoKits[self.kitID] is None:
-                cause += "kitID(" + str(self.kitID) + ") not available or initialized"
-            print("Error occured updating node '" + self.label + "'\n" + cause)
+            if self.robot is None:
+                cause += "Robot not assigned or properly initialized"
+            if self.servoKit is None:
+                cause += "servoKit not defined or initialized"
+            self.robot.log("Error occured updating node '" + self.label + "'\n" + cause, 3)
     
     def printStructure(self, depth, full = False):
         self.printNode(depth = depth, full = full)
@@ -192,7 +196,7 @@ class Sensor_GY_521(Component):
         self.label = label
         self.parent = parent
         self.children = []
-        if robot is None:
+        if robot is None and parent is not None:
             self.robot = parent.robot
         else:
             self.robot = robot
