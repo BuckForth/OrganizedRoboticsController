@@ -1,14 +1,14 @@
-import RobotLibrary.Robot
+import RobotLibrary.Robot2
 import RobotLibrary.Pose
 from adafruit_servokit import ServoKit
-from RobotLibrary.Robot import Robot as Robot
+from RobotLibrary.Robot2 import Robot as Robot
 from RobotLibrary.Pose import Pose as Pose
-from RobotLibrary.Components import Bot_Node as Bot_Node
-from RobotLibrary.Components import Servo_Node as Servo_Node
-from RobotLibrary.Components import Sensor_GY_521 as GY_521
+from RobotLibrary.Components2 import Bot_Node as Bot_Node
+from RobotLibrary.Components2 import Servo_Node as Servo_Node
+from RobotLibrary.Components2 import Sensor_GY_521 as GY_521
 
 def RoBoi() -> Robot:
-    print("Generating RoBOI (0.2) control structure")
+    print("Primitive: RoBOI (0.3a) -> control structure")
     kit1 = None
     try:
         kit1 = ServoKit(channels = 16, address=0x40)
@@ -22,7 +22,7 @@ def RoBoi() -> Robot:
     except Exception as e:
         print("An error occurred defining right servo kit\n" + str(e))
     servoKits = [kit1,kit2]
-    robot = Robot(name = "RoBOI (0.2)",servoKits = servoKits, frequency = 50)
+    robot = Robot(50)
     #Head and Neck roots
     
     robot.root = GY_521(label = "Root_Gyro", robot = robot)

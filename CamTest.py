@@ -1,25 +1,26 @@
-import cv2 
-  
-  
-# define a video capture object 
-vid = cv2.VideoCapture(0) 
-  
-while(True): 
-      
-    # Capture the video frame 
-    # by frame 
-    ret, frame = vid.read() 
-  
-    # Display the resulting frame 
-    cv2.imshow('frame', frame) 
-      
-    # the 'q' button is set as the 
-    # quitting button you may use any 
-    # desired button of your choice 
-    if cv2.waitKey(1) & 0xFF == ord('q'): 
-        break
-  
-# After the loop release the cap object 
-vid.release() 
-# Destroy all the windows 
-cv2.destroyAllWindows()
+from picamera.array import PiRGBArray
+from picamera import PiCamera
+import time
+import cv2
+
+resolution = (320, 240)
+# initialize the camera and grab a reference to the raw camera capture
+camera = PiCamera()
+camera.resolution = resolution
+camera.framerate = 32
+rawCapture = PiRGBArray(camera, size=resolution)
+# allow the camera to warmup
+time.sleep(0.1)
+# capture frames from the camera
+for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
+	# grab the raw NumPy array representing the image, then initialize the timestamp
+	# and occupied/unoccupied text
+	image = frame.array
+	# show the frame
+	cv2.imshow("Frame", image)
+	key = cv2.waitKey(1) & 0xFF
+	# clear the stream in preparation for the next frame
+	rawCapture.truncate(0)
+	# if the `q` key was pressed, break from the loop
+	if key == ord("q"):
+		break
