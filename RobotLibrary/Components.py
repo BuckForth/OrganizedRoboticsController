@@ -3,7 +3,7 @@ import smbus
 import math
 
 #Standard Bot_Node Structural Component
-class Bot_Node:
+class Component:
     """Node class for the bot structure"""
     def __init__(self, label = "botNode", parent = None, robot = None):
         self.label = label
@@ -13,47 +13,15 @@ class Bot_Node:
             self.robot = parent.robot
         else:
             self.robot = robot
-                  
-    def moveAngle(self, angle, speed):
-        if angle >= 0 and angle <= self.actuation_range:
-            self.speed = speed
-            self.destinationPos = angle
-            if self.mirror:
-                self.destinationPos = self.actuation_range - self.destinationPos
-        else:
-            print("Cannot move to angle:" + angle);
-            print("\tAngle must fall withing range: 0, " + self.acactuation_range);
-        return self
+    
+    def initialize(self, robot):
+        robot.log("initialized component %s as:\n\t%s"%(self.label,str(type(self))))
+    
+    def setData(self, data):
+        self.robot.log("Setting component %s(%s) data to %s(%s)" % (self.label,str(type(self)),str(data),str(type(data))))
     
     def updateStep(self, deltaTime):
-        if (self.robot is not None and self.robot.servoKits is not None and
-        len(self.robot.servoKits) > self.kitID and self.robot.servoKits[self.kitID] is not None):
-            #self.currentPos = self.robot.servoKits[self.kitID].servo[self.servoID].angle
-            if (self.currentPos < 0):
-                self.currentPos = 0
-            if (self.currentPos > self.actuation_range):
-                self.currentPos = self.actuation_range
-            diff = self.destinationPos - self.currentPos
-            maxStep = self.speed * deltaTime
-            step = maxStep
-            if diff < 0:
-                step *= -1.0
-            if abs(diff) < abs(maxStep):
-                step = diff
-            self.currentPos += step
-            self.robot.servoKits[self.kitID].servo[self.servoID].angle = self.currentPos
-            #print("Angle update")
-        else:
-            cause = "\t"
-            if self.robot is not None:
-                cause += "Robot servoKit not defined or initialized"
-            if self.robot.servoKits is not None:
-                cause += "Robot servoKit not defined or initialized"
-            if len(self.robot.servoKits) < self.kitID:
-                cause += "kitID outside bounds"
-            if self.robot.servoKits[self.kitID] is None:
-                cause += "kitID(" + str(self.kitID) + ") not available or initialized"
-            print("Error occured updating node '" + self.label + "'\n" + cause)
+        self.robot.log("Updating component %s(%s) after %.4f(secs)" % (self.label,str(type(self)),deltaTime))
     
     def addChild(self, child):
         child.parent = self
@@ -106,7 +74,7 @@ class Bot_Node:
 
 #Definition of Servo BotNode Joint
     #Rotates along axis
-class Servo_Node(Bot_Node):
+class Servo_Node(Component):
     """Node class for the bot structure"""
     def __init__(self, label = "botNode",parent = None, kitID = 0, 
     servoID = 0, restPos = 0.0, robot = None, actuation_range = 180, mirror = False):
@@ -137,6 +105,7 @@ class Servo_Node(Bot_Node):
         return self
     
     def updateStep(self, deltaTime):
+        super(deltaTime)
         if (self.robot is not None and self.robot.servoKits is not None and
         len(self.robot.servoKits) > self.kitID and self.robot.servoKits[self.kitID] is not None):
             #self.currentPos = self.robot.servoKits[self.kitID].servo[self.servoID].angle
@@ -211,7 +180,7 @@ class Servo_Node(Bot_Node):
         
 #Definition of GY_521 Gyroscope sensor
     #Measures angle from flat
-class Sensor_GY_521(Bot_Node): 
+class Sensor_GY_521(Component): 
     """Node class for the bot structure"""
     def __init__(self, label = "botNode",parent = None, robot = None):
         self.power_mgmt_1 = 0x6b

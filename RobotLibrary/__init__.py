@@ -3,7 +3,7 @@ import RobotLibrary.Pose
 from adafruit_servokit import ServoKit
 from RobotLibrary.Robot2 import Robot as Robot
 from RobotLibrary.Pose import Pose as Pose
-from RobotLibrary.Components2 import Bot_Node as Bot_Node
+from RobotLibrary.Components2 import Component as Bot_Node
 from RobotLibrary.Components2 import Servo_Node as Servo_Node
 from RobotLibrary.Components2 import Sensor_GY_521 as GY_521
 
