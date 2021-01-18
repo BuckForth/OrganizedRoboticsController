@@ -161,7 +161,7 @@ class orcEdit:
         self.topleveltabs = ttk.Notebook(root)
 
         nodeEditorTab = ttk.Frame(self.topleveltabs)
-        NodeEditor.NodeEditor(nodeEditorTab)
+        self.nodeEditorForms(nodeEditorTab)
         poseEditorTab = ttk.Frame(self.topleveltabs)
         PoseEditor.PoseEditor(poseEditorTab)
         self.topleveltabs.add(nodeEditorTab, text = "Configuration")
@@ -169,14 +169,7 @@ class orcEdit:
         
         self.topleveltabs.pack(expand = 1, fill = 'both')
         
-
-
-class NodeEditor:
-    def __init__(self, root):
-
-        
-    
-    def populateForm(self, event):
+    def populateNodeForm(self, event):
         item =  self.nodeView.identify('item',event.x,event.y)
         if self.activeBotNode is not None and self.robot.getNode(self.nodeView.item(item,"text")) is not None:
             self.activeBotNode = self.robot.getNode(self.nodeView.item(item,"text"))
@@ -218,6 +211,7 @@ class NodeEditor:
         
         
 root = Tk()
-orcEdit(root, "/")
+editor = orcEdit(root, "/")
 root.mainloop()
-
+editor.robot.disengage()
+print("Program Ended")

@@ -101,7 +101,7 @@ class PoseEditor:
         loadPosButton = Button(IOFrame, text = "Load Pose", command = self.loadPose)
         loadPosButton.grid(column = coloumCount - 1, row = 0)
         IOFrame.grid(column = 0, row = 0)
-        self.robot.initializeServos()
+        self.robot.initialize()
     
 
         
@@ -109,6 +109,7 @@ class PoseEditor:
         
 
 root = Tk()
-PoseEditor(root, "/")
+editor = PoseEditor(root, "/")
 root.mainloop()
+editor.robot.disengage()
 

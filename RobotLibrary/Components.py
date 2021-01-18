@@ -21,6 +21,9 @@ class Component:
     def setData(self, data):
         self.robot.log("Setting component %s(%s) data to %s(%s)" % (self.label,str(type(self)),str(data),str(type(data))),0)
     
+    def getData(self):
+        self.robot.log("Reading component %s(%s) data" % (self.label,str(type(self)),str(data),str(type(data))),0)
+    
     def updateStep(self, deltaTime):
         self.robot.log("Updating component %s(%s) after %.4f(secs)" % (self.label,str(type(self)),deltaTime),0)
     
@@ -44,7 +47,8 @@ class Component:
         return rlist
     
     def printNode(self, depth = 0, full = False):
-        print (" - "*depth + self.label + "        :" + str(type(self)) )
+        print (" - "*depth + self.label)
+        print (" - "*depth + "|-> Class         : " + str(type(self)))
         if full:
             if self.parent is None:
                 print (" - "*depth + "|-> Parent        : None")
@@ -77,6 +81,7 @@ class Servo_Node(Component):
         super(Servo_Node, self).__init__(label = label, parent = parent, robot = robot)
         #init Servokit PMW
         self.servoKit = None
+        self.kitAddress = kitAddress
         try:
             self.servoKit = ServoKit(channels = 16, address=kitAddress)
             self.servoKit.frequency = 50
@@ -109,7 +114,7 @@ class Servo_Node(Component):
         return self
     
     def updateStep(self, deltaTime):
-        super()
+        super().updateStep(deltaTime)
         if (self.robot is not None and self.servoKit is not None):
             #self.currentPos = self.robot.servoKits[self.kitID].servo[self.servoID].angle
             if (self.currentPos < 0):
@@ -134,46 +139,14 @@ class Servo_Node(Component):
                 cause += "servoKit not defined or initialized"
             self.robot.log("Error occured updating node '" + self.label + "'\n" + cause, 3)
     
-    def printStructure(self, depth, full = False):
-        self.printNode(depth = depth, full = full)
-        if len(self.children) > 0:
-            for child in self.children:
-                child.printStructure(depth + 1, full)
-                    
-    def getList(self):
-        rlist = [self]
-        if len(self.children) > 0:
-            for child in self.children:
-                rlist.extend(child.getList())
-        return rlist
-    
     def printNode(self, depth = 0, full = False):
-        print (" - "*depth + self.label)
+        super(Servo_Node, self).printNode(depth, full)
         if full:
-            if self.parent is None:
-                print (" - "*depth + "|-> Parent        : None")
-            else:
-                print (" - "*depth + "|-> Parent        : " + self.parent.label)
             print (" - "*depth + "|-> ServoID       : " + str(self.servoID))
-            print (" - "*depth + "|-> KitID         : " + str(self.kitID))
+            print (" - "*depth + "|-> I2CAddress    : " + str(self.kitAddress))
             print (" - "*depth + "|-> restPos       : " + str(self.restPos))
             print (" - "*depth + "|-> offset        : " + str(self.offset))
             print (" - "*depth + "|-> actuationRange: " + str(self.actuation_range))
-        
-    def getNode(self, nodeName):
-        if self.label == nodeName:
-            return self
-        elif len(self.children) > 0:
-            rVal = None
-            found = False
-            for child in self.children:
-                if rVal == None:
-                    rVal = child.getNode(nodeName)
-                if rVal != None:
-                    found = True
-            return rVal
-        else:
-            return None
 #----------------END OF SERVO_NODE---------------------#       
         
         
@@ -213,21 +186,8 @@ class Sensor_GY_521(Component):
             print ("X Rotation:" , self.get_x_rotation(gy_521_xout_skaliert, gy_521_yout_skaliert, gy_521_zout_skaliert))
             print ("Y Rotation:" , self.get_y_rotation(gy_521_xout_skaliert, gy_521_yout_skaliert, gy_521_zout_skaliert))
     
-    def printStructure(self, depth, full = False):
-        self.printNode(depth = depth, full = full)
-        if len(self.children) > 0:
-            for child in self.children:
-                child.printStructure(depth + 1, full)
-                    
-    def getList(self):
-        rlist = [self]
-        if len(self.children) > 0:
-            for child in self.children:
-                rlist.extend(child.getList())
-        return rlist
-    
     def printNode(self, depth = 0, full = False):
-        print (" - "*depth + self.label)
+        super(Sensor_GY_521, self).printNode(depth, full)
         if full:
             self.bus.write_byte_data(self.address, self.power_mgmt_1, 0)
             gyroskop_xout = self.read_word_2c(0x43)
@@ -239,10 +199,6 @@ class Sensor_GY_521(Component):
             gy_521_xout_skaliert = gy_521_xout / 16384.0
             gy_521_yout_skaliert = gy_521_yout / 16384.0
             gy_521_zout_skaliert = gy_521_zout / 16384.0
-            if self.parent is None:
-                print (" - "*depth + "|-> Parent        : None")
-            else:
-                print (" - "*depth + "|-> Parent        : " + self.parent.label)
             print (" - "*depth + "|-> X Rotation:" , self.get_x_rotation(gy_521_xout_skaliert, gy_521_yout_skaliert, gy_521_zout_skaliert))
             print (" - "*depth + "|-> Y Rotation:" , self.get_y_rotation(gy_521_xout_skaliert, gy_521_yout_skaliert, gy_521_zout_skaliert))
     
