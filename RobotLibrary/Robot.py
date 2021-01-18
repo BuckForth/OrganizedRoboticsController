@@ -1,43 +1,46 @@
 import threading
 import time
+import sys
 
 class Robot:
-    """Robot class for robot control"""
-    
-    def __init__(self, servoKits = [], frequency = 50, name = "newRobot"):
-        self.name = name
-        self.servoKits = servoKits
-        self.root = None
-        self.frequency = frequency
+    #Robot class for robot control
+    def __init__(self, refreshRate = 50, root = None):
+        self.root = root
+        if (root is not None):
+            self.root.robot = self
+        self.frequency = refreshRate
+        self.lastUpdate = None
+        self.ctrlThread = None
+        self.logMode = 3
         
-    def servoDriver_thread(self):
+    def orcDriver(self):
         self.active = True
         while self.active:
+            if (self.lastUpdate is None):
+                self.lastUpdate = time.time()
             nodes = self.root.getList()
             for node in nodes:
-                node.robot = self
-                node.updateStep(deltaTime = 1.0/self.frequency)
-            time.sleep(1.0/self.frequency)
+                nodeDeltaTime = time.time() - self.lastUpdate
+                node.updateStep(deltaTime = nodeDeltaTime)
+            sleepDelay = ((1.0/self.frequency) - (time.time() - self.lastUpdate)) #Total time slice - used time
+            if (sleepDelay < 0):
+                nSkip = int(sleepDelay / (-1.0/self.frequency) + 1)
+                sleepDelay = sleepDelay + (nSkip * (1.0/self.frequency))
+                self.log("Bot state update unable to keep up.({:f}s/{:f}s)\n\tSkipping {:d} frame(s)\n".format(time.time() - self.lastUpdate,(1.0/self.frequency),nSkip),2)
+                sys.stdout.flush()
+            self.lastUpdate = time.time()
+            time.sleep(sleepDelay)
     
-    def initializeServos(self):
-        kitCheck = True
-        if len(self.servoKits) > 0:
-            kitCheck += 0x01
-        for kit in self.servoKits:
-                if kit == None:
-                    kitCheck = False
-        if kitCheck:
-            #Initialize Positions
-            nodes = self.getNodeList()
-              
-            #Start servo update thread
-            self.thread = threading.Thread(target=self.servoDriver_thread, daemon=True)
-            self.thread.start()
-        else:
-            print("An error occurred initializing servo kits") 
+    def initialize(self):
+        nodes = self.root.getList()
+        for node in nodes:
+            node.initialize(self)
+        self.ctrlThread  = threading.Thread(target=self.orcDriver, daemon=True)
+        self.ctrlThread.start()
         
     def disengage(self):
         self.active = False
+        self.ctrlThread.join()
         
     def getNode(self, nodeName):
         return self.root.getNode(nodeName)
@@ -45,5 +48,13 @@ class Robot:
     def getNodeList(self):
         return self.root.getList()
     
+    def log(self, string, priority = 0):
+        # 0 : Debug (hidden by default)
+        # 1 : Message
+        # 2 : Warning
+        # 3 : Error
+        if (priority >= self.logMode):
+            print(string)
+        
     def printStructure(self, full = False):
         self.root.printStructure(0,full)

@@ -1,9 +1,10 @@
 #import Robot
 import smbus
 import math
+from adafruit_servokit import ServoKit
 
 #Standard Bot_Node Structural Component
-class Bot_Node:
+class Component:
     """Node class for the bot structure"""
     def __init__(self, label = "botNode", parent = None, robot = None):
         self.label = label
@@ -13,47 +14,18 @@ class Bot_Node:
             self.robot = parent.robot
         else:
             self.robot = robot
-                  
-    def moveAngle(self, angle, speed):
-        if angle >= 0 and angle <= self.actuation_range:
-            self.speed = speed
-            self.destinationPos = angle
-            if self.mirror:
-                self.destinationPos = self.actuation_range - self.destinationPos
-        else:
-            print("Cannot move to angle:" + angle);
-            print("\tAngle must fall withing range: 0, " + self.acactuation_range);
-        return self
+    
+    def initialize(self, robot):
+        self.robot.log("initialized component %s as:\n\t%s"%(self.label,str(type(self))),0)
+    
+    def setData(self, data):
+        self.robot.log("Setting component %s(%s) data to %s(%s)" % (self.label,str(type(self)),str(data),str(type(data))),0)
+    
+    def getData(self):
+        self.robot.log("Reading component %s(%s) data" % (self.label,str(type(self)),str(data),str(type(data))),0)
     
     def updateStep(self, deltaTime):
-        if (self.robot is not None and self.robot.servoKits is not None and
-        len(self.robot.servoKits) > self.kitID and self.robot.servoKits[self.kitID] is not None):
-            #self.currentPos = self.robot.servoKits[self.kitID].servo[self.servoID].angle
-            if (self.currentPos < 0):
-                self.currentPos = 0
-            if (self.currentPos > self.actuation_range):
-                self.currentPos = self.actuation_range
-            diff = self.destinationPos - self.currentPos
-            maxStep = self.speed * deltaTime
-            step = maxStep
-            if diff < 0:
-                step *= -1.0
-            if abs(diff) < abs(maxStep):
-                step = diff
-            self.currentPos += step
-            self.robot.servoKits[self.kitID].servo[self.servoID].angle = self.currentPos
-            #print("Angle update")
-        else:
-            cause = "\t"
-            if self.robot is not None:
-                cause += "Robot servoKit not defined or initialized"
-            if self.robot.servoKits is not None:
-                cause += "Robot servoKit not defined or initialized"
-            if len(self.robot.servoKits) < self.kitID:
-                cause += "kitID outside bounds"
-            if self.robot.servoKits[self.kitID] is None:
-                cause += "kitID(" + str(self.kitID) + ") not available or initialized"
-            print("Error occured updating node '" + self.label + "'\n" + cause)
+        self.robot.log("Updating component %s(%s) after %.4f(secs)" % (self.label,str(type(self)),deltaTime),0)
     
     def addChild(self, child):
         child.parent = self
@@ -76,16 +48,12 @@ class Bot_Node:
     
     def printNode(self, depth = 0, full = False):
         print (" - "*depth + self.label)
+        print (" - "*depth + "|-> Class         : " + str(type(self)))
         if full:
             if self.parent is None:
                 print (" - "*depth + "|-> Parent        : None")
             else:
                 print (" - "*depth + "|-> Parent        : " + self.parent.label)
-            print (" - "*depth + "|-> ServoID       : " + str(self.servoID))
-            print (" - "*depth + "|-> KitID         : " + str(self.kitID))
-            print (" - "*depth + "|-> restPos       : " + str(self.restPos))
-            print (" - "*depth + "|-> offset        : " + str(self.offset))
-            print (" - "*depth + "|-> actuationRange: " + str(self.actuation_range))
         
     def getNode(self, nodeName):
         if self.label == nodeName:
@@ -106,12 +74,20 @@ class Bot_Node:
 
 #Definition of Servo BotNode Joint
     #Rotates along axis
-class Servo_Node(Bot_Node):
+class Servo_Node(Component):
     """Node class for the bot structure"""
-    def __init__(self, label = "botNode",parent = None, kitID = 0, 
+    def __init__(self, label = "botNode",parent = None, kitAddress = 0x40, 
     servoID = 0, restPos = 0.0, robot = None, actuation_range = 180, mirror = False):
-        super().__init__(label = label, parent = parent)
-        self.kitID = kitID
+        super(Servo_Node, self).__init__(label = label, parent = parent, robot = robot)
+        #init Servokit PMW
+        self.servoKit = None
+        self.kitAddress = kitAddress
+        try:
+            self.servoKit = ServoKit(channels = 16, address=kitAddress)
+            self.servoKit.frequency = 50
+        except Exception as e:
+            self.robot.log("An error occurred defining servo kit\n" + str(e),3)
+            return
         self.servoID = servoID
         self.restPos = restPos
         self.actuation_range = actuation_range
@@ -124,6 +100,7 @@ class Servo_Node(Bot_Node):
         self.offset = 0.0
         self.speed = 0.0
         self.mirror = mirror
+        return
                   
     def moveAngle(self, angle, speed):
         if angle >= 0 and angle <= self.actuation_range:
@@ -137,8 +114,8 @@ class Servo_Node(Bot_Node):
         return self
     
     def updateStep(self, deltaTime):
-        if (self.robot is not None and self.robot.servoKits is not None and
-        len(self.robot.servoKits) > self.kitID and self.robot.servoKits[self.kitID] is not None):
+        super().updateStep(deltaTime)
+        if (self.robot is not None and self.servoKit is not None):
             #self.currentPos = self.robot.servoKits[self.kitID].servo[self.servoID].angle
             if (self.currentPos < 0):
                 self.currentPos = 0
@@ -152,68 +129,33 @@ class Servo_Node(Bot_Node):
             if abs(diff) < abs(maxStep):
                 step = diff
             self.currentPos += step
-            self.robot.servoKits[self.kitID].servo[self.servoID].angle = self.currentPos
+            self.servoKit.servo[self.servoID].angle = self.currentPos
             #print("Angle update")
         else:
             cause = "\t"
-            if self.robot is not None:
-                cause += "Robot servoKit not defined or initialized"
-            if self.robot.servoKits is not None:
-                cause += "Robot servoKit not defined or initialized"
-            if len(self.robot.servoKits) < self.kitID:
-                cause += "kitID outside bounds"
-            if self.robot.servoKits[self.kitID] is None:
-                cause += "kitID(" + str(self.kitID) + ") not available or initialized"
-            print("Error occured updating node '" + self.label + "'\n" + cause)
-    
-    def printStructure(self, depth, full = False):
-        self.printNode(depth = depth, full = full)
-        if len(self.children) > 0:
-            for child in self.children:
-                child.printStructure(depth + 1, full)
-                    
-    def getList(self):
-        rlist = [self]
-        if len(self.children) > 0:
-            for child in self.children:
-                rlist.extend(child.getList())
-        return rlist
+            if self.robot is None:
+                cause += "Robot not assigned or properly initialized"
+            if self.servoKit is None:
+                cause += "servoKit not defined or initialized"
+            self.robot.log("Error occured updating node '" + self.label + "'\n" + cause, 3)
     
     def printNode(self, depth = 0, full = False):
-        print (" - "*depth + self.label)
+        super(Servo_Node, self).printNode(depth, full)
         if full:
-            if self.parent is None:
-                print (" - "*depth + "|-> Parent        : None")
-            else:
-                print (" - "*depth + "|-> Parent        : " + self.parent.label)
             print (" - "*depth + "|-> ServoID       : " + str(self.servoID))
-            print (" - "*depth + "|-> KitID         : " + str(self.kitID))
+            print (" - "*depth + "|-> I2CAddress    : " + str(self.kitAddress))
             print (" - "*depth + "|-> restPos       : " + str(self.restPos))
             print (" - "*depth + "|-> offset        : " + str(self.offset))
             print (" - "*depth + "|-> actuationRange: " + str(self.actuation_range))
-        
-    def getNode(self, nodeName):
-        if self.label == nodeName:
-            return self
-        elif len(self.children) > 0:
-            rVal = None
-            found = False
-            for child in self.children:
-                if rVal == None:
-                    rVal = child.getNode(nodeName)
-                if rVal != None:
-                    found = True
-            return rVal
-        else:
-            return None
 #----------------END OF SERVO_NODE---------------------#       
         
         
 #Definition of GY_521 Gyroscope sensor
     #Measures angle from flat
-class Sensor_GY_521(Bot_Node): 
+class Sensor_GY_521(Component): 
     """Node class for the bot structure"""
     def __init__(self, label = "botNode",parent = None, robot = None):
+        super(Sensor_GY_521, self).__init__(label = label, parent = parent, robot = robot)
         self.power_mgmt_1 = 0x6b
         self.power_mgmt_2 = 0x6c
         
@@ -223,7 +165,7 @@ class Sensor_GY_521(Bot_Node):
         self.label = label
         self.parent = parent
         self.children = []
-        if robot is None:
+        if robot is None and parent is not None:
             self.robot = parent.robot
         else:
             self.robot = robot
@@ -244,21 +186,8 @@ class Sensor_GY_521(Bot_Node):
             print ("X Rotation:" , self.get_x_rotation(gy_521_xout_skaliert, gy_521_yout_skaliert, gy_521_zout_skaliert))
             print ("Y Rotation:" , self.get_y_rotation(gy_521_xout_skaliert, gy_521_yout_skaliert, gy_521_zout_skaliert))
     
-    def printStructure(self, depth, full = False):
-        self.printNode(depth = depth, full = full)
-        if len(self.children) > 0:
-            for child in self.children:
-                child.printStructure(depth + 1, full)
-                    
-    def getList(self):
-        rlist = [self]
-        if len(self.children) > 0:
-            for child in self.children:
-                rlist.extend(child.getList())
-        return rlist
-    
     def printNode(self, depth = 0, full = False):
-        print (" - "*depth + self.label)
+        super(Sensor_GY_521, self).printNode(depth, full)
         if full:
             self.bus.write_byte_data(self.address, self.power_mgmt_1, 0)
             gyroskop_xout = self.read_word_2c(0x43)
@@ -270,10 +199,6 @@ class Sensor_GY_521(Bot_Node):
             gy_521_xout_skaliert = gy_521_xout / 16384.0
             gy_521_yout_skaliert = gy_521_yout / 16384.0
             gy_521_zout_skaliert = gy_521_zout / 16384.0
-            if self.parent is None:
-                print (" - "*depth + "|-> Parent        : None")
-            else:
-                print (" - "*depth + "|-> Parent        : " + self.parent.label)
             print (" - "*depth + "|-> X Rotation:" , self.get_x_rotation(gy_521_xout_skaliert, gy_521_yout_skaliert, gy_521_zout_skaliert))
             print (" - "*depth + "|-> Y Rotation:" , self.get_y_rotation(gy_521_xout_skaliert, gy_521_yout_skaliert, gy_521_zout_skaliert))
     
@@ -319,3 +244,13 @@ class Sensor_GY_521(Bot_Node):
     def get_x_rotation(self, x,y,z):
         radians = math.atan2(y, self.dist(x,z))
         return math.degrees(radians)
+#----------------END OF GYRO_NODE---------------------#       
+        
+        
+#Definition of PiCam controller
+    #Measures angle from flat
+class piCamComponent(Component):
+    def __init__(self, label = "botNode",parent = None, robot = None, resolution = (320, 240)):
+        super(piCamComponent, self).__init__(label = label, parent = parent, robot = robot)
+        self.resolution = resolution
+        self.frame = None
