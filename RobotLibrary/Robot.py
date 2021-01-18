@@ -10,6 +10,8 @@ class Robot:
             self.root.robot = self
         self.frequency = refreshRate
         self.lastUpdate = None
+        self.ctrlThread = None
+        self.logMode = 3
         
     def orcDriver(self):
         self.active = True
@@ -20,13 +22,11 @@ class Robot:
             for node in nodes:
                 nodeDeltaTime = time.time() - self.lastUpdate
                 node.updateStep(deltaTime = nodeDeltaTime)
-            NextUpdateFrame = self.lastUpdate + (1.0/self.frequency)
-            sys.stdout.flush()
-            sleepDelay = NextUpdateFrame - time.time()
+            sleepDelay = ((1.0/self.frequency) - (time.time() - self.lastUpdate)) #Total time slice - used time
             if (sleepDelay < 0):
                 nSkip = int(sleepDelay / (-1.0/self.frequency) + 1)
                 sleepDelay = sleepDelay + (nSkip * (1.0/self.frequency))
-                self.log("Bot state update unable to keep up.\n\tSkipping {:d} frame(s)\n".format(nSkip),3)
+                self.log("Bot state update unable to keep up.({:f}s/{:f}s)\n\tSkipping {:d} frame(s)\n".format(time.time() - self.lastUpdate,(1.0/self.frequency),nSkip),2)
                 sys.stdout.flush()
             self.lastUpdate = time.time()
             time.sleep(sleepDelay)
@@ -35,11 +35,12 @@ class Robot:
         nodes = self.root.getList()
         for node in nodes:
             node.initialize(self)
-        x = threading.Thread(target=self.orcDriver, daemon=True)
-        x.start()
+        self.ctrlThread  = threading.Thread(target=self.orcDriver, daemon=True)
+        self.ctrlThread.start()
         
     def disengage(self):
         self.active = False
+        self.ctrlThread.join()
         
     def getNode(self, nodeName):
         return self.root.getNode(nodeName)
@@ -52,9 +53,8 @@ class Robot:
         # 1 : Message
         # 2 : Warning
         # 3 : Error
-        if (priority > 0):
+        if (priority >= self.logMode):
             print(string)
-        
         
     def printStructure(self, full = False):
         self.root.printStructure(0,full)

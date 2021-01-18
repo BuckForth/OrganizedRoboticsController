@@ -25,9 +25,9 @@ def RoBoi() -> Robot:
     """
     #Head and Neck roots
     gyro = GY_521(label = "Body_Gyro")
-    robot = Robot(50, gyro)
+    robot = Robot(10, gyro)
     robot.root.addChild(Servo_Node(label = "Neck_Pan", kitAddress = 0x41, servoID = 15, restPos = 90))
-    robot.getNode("Neck_Pan").addChild(Servo_Node(label = "Head_Pitch"))
+    robot.getNode("Neck_Pan").addChild(Servo_Node(label = "Head_Pitch", restPos = 90))
     #Left leg
     robot.getNode("Body_Gyro").addChild(Servo_Node(label = "Hip_Y_Left",  servoID = 1, restPos = 45))
     robot.getNode("Hip_Y_Left").addChild(Servo_Node(label = "Hip_Z_Left",  servoID = 2, restPos = 15))

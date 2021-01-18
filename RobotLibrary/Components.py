@@ -44,17 +44,12 @@ class Component:
         return rlist
     
     def printNode(self, depth = 0, full = False):
-        print (" - "*depth + self.label)
+        print (" - "*depth + self.label + "        :" + str(type(self)) )
         if full:
             if self.parent is None:
                 print (" - "*depth + "|-> Parent        : None")
             else:
                 print (" - "*depth + "|-> Parent        : " + self.parent.label)
-            print (" - "*depth + "|-> ServoID       : " + str(self.servoID))
-            print (" - "*depth + "|-> KitID         : " + str(self.kitID))
-            print (" - "*depth + "|-> restPos       : " + str(self.restPos))
-            print (" - "*depth + "|-> offset        : " + str(self.offset))
-            print (" - "*depth + "|-> actuationRange: " + str(self.actuation_range))
         
     def getNode(self, nodeName):
         if self.label == nodeName:
@@ -83,10 +78,10 @@ class Servo_Node(Component):
         #init Servokit PMW
         self.servoKit = None
         try:
-            kit = ServoKit(channels = 16, address=kitAddress)
-            kit.frequency = 50
+            self.servoKit = ServoKit(channels = 16, address=kitAddress)
+            self.servoKit.frequency = 50
         except Exception as e:
-            self.robot.log("An error occurred defining servo kit\n" + str(e))
+            self.robot.log("An error occurred defining servo kit\n" + str(e),3)
             return
         self.servoID = servoID
         self.restPos = restPos
@@ -187,6 +182,7 @@ class Servo_Node(Component):
 class Sensor_GY_521(Component): 
     """Node class for the bot structure"""
     def __init__(self, label = "botNode",parent = None, robot = None):
+        super(Sensor_GY_521, self).__init__(label = label, parent = parent, robot = robot)
         self.power_mgmt_1 = 0x6b
         self.power_mgmt_2 = 0x6c
         
@@ -292,3 +288,13 @@ class Sensor_GY_521(Component):
     def get_x_rotation(self, x,y,z):
         radians = math.atan2(y, self.dist(x,z))
         return math.degrees(radians)
+#----------------END OF GYRO_NODE---------------------#       
+        
+        
+#Definition of PiCam controller
+    #Measures angle from flat
+class piCamComponent(Component):
+    def __init__(self, label = "botNode",parent = None, robot = None, resolution = (320, 240)):
+        super(piCamComponent, self).__init__(label = label, parent = parent, robot = robot)
+        self.resolution = resolution
+        self.frame = None
