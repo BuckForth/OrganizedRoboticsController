@@ -40,7 +40,8 @@ class Robot:
         
     def disengage(self):
         self.active = False
-        self.ctrlThread.join()
+        if(self.ctrlThread is not None and self.ctrlThread.is_alive()):
+            self.ctrlThread.join()
         
     def getNode(self, nodeName):
         return self.root.getNode(nodeName)
