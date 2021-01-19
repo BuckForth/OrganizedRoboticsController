@@ -7,22 +7,7 @@ from RobotLibrary.Components import Servo_Node as Servo_Node
 from RobotLibrary.Components import Sensor_GY_521 as GY_521
 
 def RoBoi() -> Robot:
-    print("Primitive: RoBOI (0.3a) -> control structure")
-    """
-    kit1 = None
-    try:
-        kit1 = ServoKit(channels = 16, address=0x40)
-        kit1.frequency = 50
-    except Exception as e:
-        print("An error occurred defining left servo kit\n" + str(e))
-    kit2 = None
-    try:
-        kit2 = ServoKit(channels = 16, address=0x41)
-        kit2.frequency = 50
-    except Exception as e:
-        print("An error occurred defining right servo kit\n" + str(e))
-    servoKits = [kit1,kit2]
-    """
+    print("Primitive: RoBOI (0.4) -> control structure")
     #Head and Neck roots
     gyro = GY_521(label = "Body_Gyro")
     robot = Robot(10, gyro)

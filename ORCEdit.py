@@ -1,8 +1,9 @@
 import RobotLibrary
 import time
 import tkinter as tk
-import pickle
+from NodeEditor import NodeEditor
 from PoseEditor import PoseEditor
+import pickle
 from pathlib import Path
 from tkinter import *
 from tkinter import ttk
@@ -25,9 +26,7 @@ class orcEditConfig:
             self.lastRobotConfigPath = loadedData.lastRobotConfigPath
             self.robotConfigCache = loadedData.robotConfigCache
             self.lastRobotPosePath = loadedData.lastRobotPosePath
-        
-        
-    
+
 class orcEdit:
     def updateNodes(self, event):
         for sliderNode in self.sliderNodes:
@@ -145,8 +144,9 @@ class orcEdit:
     #End of nodeEditorForms()
        
        
-    def __init__(self, root, lastOpenedDir):
+    def __init__(self, root):
         root.title("Robot Editor")
+        self.config = orcEditConfig()
         self.robotAdjustSpeed = 360
 #Generate/Load Bot
         self.robot = RobotLibrary.RoBoi()
@@ -154,16 +154,13 @@ class orcEdit:
         #self.nodes.sort(key = self.nodeName)
         self.activeBotNode = self.robot.root
         self.sliderNodes = []
-        self.workingDir = lastOpenedDir
-        self.robot.root.loud = True
 #Build UI
         #SetRootNotebook
         self.topleveltabs = ttk.Notebook(root)
-
         nodeEditorTab = ttk.Frame(self.topleveltabs)
-        self.nodeEditorForms(nodeEditorTab)
+        self.nodeEditor = NodeEditor(nodeEditorTab, self.robot, self)
         poseEditorTab = ttk.Frame(self.topleveltabs)
-        PoseEditor.PoseEditor(poseEditorTab)
+        self.poseEditor = PoseEditor(poseEditorTab, self.robot, self)
         self.topleveltabs.add(nodeEditorTab, text = "Configuration")
         self.topleveltabs.add(poseEditorTab, text = "Poses")
         
@@ -211,7 +208,7 @@ class orcEdit:
         
         
 root = Tk()
-editor = orcEdit(root, "/")
+editor = orcEdit(root)
 root.mainloop()
 editor.robot.disengage()
 print("Program Ended")

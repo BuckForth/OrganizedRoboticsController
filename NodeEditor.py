@@ -1,15 +1,15 @@
 import RobotLibrary
+import RobotLibrary.Components
 import time
 import tkinter as tk
 from tkinter import *
 from tkinter import ttk
          
 class NodeEditor:
-    def __init__(self, root):
-        root.title("Configure Bot Nodes")
-        root.geometry("640x240")
+    def __init__(self, root, robot, editor):
 #Generate/Load Bot
-        self.robot = RobotLibrary.RoBoi()
+        self.parentEditor = editor
+        self.robot = robot
         self.nodes = self.robot.getNodeList()
         self.activeBotNode = self.robot.root
 #Build UI
@@ -38,7 +38,7 @@ class NodeEditor:
         #Form Labels
         nodenameLabel = ttk.Label(nodeFrame, text = "Node Label").grid(
             column = 0, row = 0, sticky = "e")
-        kitIDLabel = ttk.Label(nodeFrame, text = "Kit ID").grid(
+        kitAddrLabel = ttk.Label(nodeFrame, text = "Kit Address").grid(
             column = 0, row = 1, sticky = "e")
         servoIDLabel = ttk.Label(nodeFrame, text = "Servo ID").grid(
             column = 0, row = 2, sticky = "e")
@@ -52,7 +52,7 @@ class NodeEditor:
             column = 0, row = 6, sticky = "e")
         #Form Entries Vars
         self.botNode = tk.StringVar()
-        self.kitID = tk.StringVar()
+        self.kitAddr = tk.StringVar()
         self.servoID = tk.StringVar()
         self.restPos = tk.StringVar()
         self.offset = tk.StringVar()
@@ -61,8 +61,8 @@ class NodeEditor:
         #Form Objects
         self.botNodeEntry = ttk.Entry(nodeFrame,   textvariable = self.botNode)
         self.botNodeEntry.grid(          column = 1, row = 0)
-        self.kitIDEntry = ttk.Entry(nodeFrame,     textvariable = self.kitID)
-        self.kitIDEntry.grid(            column = 1, row = 1)
+        self.kitAddrEntry = ttk.Entry(nodeFrame,   textvariable = self.kitAddr)
+        self.kitAddrEntry.grid(          column = 1, row = 1)
         self.servoIDEntry = ttk.Entry(nodeFrame,   textvariable = self.servoID)
         self.servoIDEntry.grid(          column = 1, row = 2)
         self.restPosEntry = ttk.Entry(nodeFrame,   textvariable = self.restPos)
@@ -94,41 +94,41 @@ class NodeEditor:
         if self.activeBotNode is not None and self.robot.getNode(self.nodeView.item(item,"text")) is not None:
             self.activeBotNode = self.robot.getNode(self.nodeView.item(item,"text"))
             self.botNode.set(self.activeBotNode.label)
-            self.kitID.set(str(self.activeBotNode.kitID))
+            if (type(self.activeBotNode)is RobotLibrary.Components.Servo_Node):
+                self.kitAddr.set(str(self.activeBotNode.kitAddress))
+                self.servoID.set(str(self.activeBotNode.servoID))
+                self.restPos.set(str(self.activeBotNode.restPos))
+                self.offset.set(str(self.activeBotNode.offset))
+                self.actuation.set(str(self.activeBotNode.actuation_range))
+                self.mirror.set(str(self.activeBotNode.mirror))
+            
+        
+    def initForm(self):
+        self.activeBotNode = self.robot.root
+        self.botNode.set(self.activeBotNode.label)
+        if (type(self.activeBotNode)is RobotLibrary.Components.Servo_Node):
+            self.kitAddr.set(str(self.activeBotNode.kitAddress))
             self.servoID.set(str(self.activeBotNode.servoID))
             self.restPos.set(str(self.activeBotNode.restPos))
             self.offset.set(str(self.activeBotNode.offset))
             self.actuation.set(str(self.activeBotNode.actuation_range))
             self.mirror.set(str(self.activeBotNode.mirror))
-        
-    def initForm(self):
-        self.activeBotNode = self.robot.root
-        self.botNode.set(self.activeBotNode.label)
-        self.kitID.set(str(self.activeBotNode.kitID))
-        self.servoID.set(str(self.activeBotNode.servoID))
-        self.restPos.set(str(self.activeBotNode.restPos))
-        self.offset.set(str(self.activeBotNode.offset))
-        self.actuation.set(str(self.activeBotNode.actuation_range))
-        self.mirror.set(str(self.activeBotNode.mirror))
+
 
     def updateNodeView(self):
         if self.activeBotNode is not None:
-            self.activeBotNode.label = self.botNode.get()       
-            self.activeBotNode.kitID = int(self.kitID.get())
-            self.activeBotNode.servoID = int(self.servoID.get())
-            self.activeBotNode.restPos = float(self.restPos.get())
-            self.activeBotNode.offset = float(self.offset.get())
-            self.activeBotNode.actuation_range = float(self.actuation.get())
-            self.activeBotNode.mirror = bool(self.mirror.get())
+            self.activeBotNode.label = self.botNode.get()
+            if (type(self.activeBotNode)is RobotLibrary.Components.Servo_Node):
+                self.activeBotNode.kitAddress = int(self.kitAddr.get())
+                self.activeBotNode.servoID = int(self.servoID.get())
+                self.activeBotNode.restPos = float(self.restPos.get())
+                self.activeBotNode.offset = float(self.offset.get())
+                self.activeBotNode.actuation_range = float(self.actuation.get())
+                self.activeBotNode.mirror = bool(self.mirror.get())
+            
             self.nodeView.delete(*self.nodeView.get_children())
             for node in self.nodes:
                 if node.parent is None:
                     self.nodeView.insert('', "end", node.label, text = node.label)
                 else:
                     self.nodeView.insert(node.parent.label, "end", node.label, text = node.label)
-            
-        
-root = Tk()
-NodeEditor(root)
-root.mainloop()
-

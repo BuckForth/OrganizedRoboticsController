@@ -70,17 +70,16 @@ class PoseEditor:
                     Node.moveAngle(angle,self.robotAdjustSpeed)
             
         
-    def __init__(self, root, lastOpenedDir):
-        root.title("Configure Bot Nodes")
+    def __init__(self, root, robot, editor):
         self.robotAdjustSpeed = 360
 #Generate/Load Bot
-        self.robot = RobotLibrary.RoBoi()
+        self.parentEditor = editor
+        self.robot = robot
         self.nodes = self.robot.getNodeList()
         #self.nodes.sort(key = self.nodeName)
         self.activeBotNode = self.robot.root
         self.sliderNodes = []
-        self.workingDir = lastOpenedDir
-        self.robot.root.loud = True
+        self.workingDir = editor.config.lastRobotPosePath
 #Build UI
         ii = 0
         coloumCount = 3
@@ -102,14 +101,3 @@ class PoseEditor:
         loadPosButton.grid(column = coloumCount - 1, row = 0)
         IOFrame.grid(column = 0, row = 0)
         self.robot.initialize()
-    
-
-        
-
-        
-
-root = Tk()
-editor = PoseEditor(root, "/")
-root.mainloop()
-editor.robot.disengage()
-
