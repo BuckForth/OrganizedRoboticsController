@@ -1,15 +1,11 @@
-import RobotLibrary.Robot
-import RobotLibrary.Pose
 from RobotLibrary.Robot import Robot as Robot
 from RobotLibrary.Pose import Pose as Pose
-from RobotLibrary.Components import Component as Bot_Node
-from RobotLibrary.Components import Servo_Node as Servo_Node
-from RobotLibrary.Components import Sensor_GY_521 as GY_521
+from RobotLibrary.Components import *
 
 def RoBoi() -> Robot:
     print("Primitive: RoBOI (0.4) -> control structure")
     #Head and Neck roots
-    gyro = GY_521(label = "Body_Gyro")
+    gyro = Components.Sensor_GY_521(label = "Body_Gyro")
     robot = Robot(10, gyro)
     robot.root.addChild(Servo_Node(label = "Neck_Pan", kitAddress = 0x41, servoID = 15, restPos = 90))
     robot.getNode("Neck_Pan").addChild(Servo_Node(label = "Head_Pitch", restPos = 90))
@@ -32,19 +28,19 @@ def RoBoi() -> Robot:
     robot.getNode("Shoulder_X_Left").addChild(Servo_Node( label = "Shoulder_Z_Left",  servoID = 8,  restPos = 130))
     robot.getNode("Shoulder_Z_Left").addChild(Servo_Node( label = "Shoulder_Y_Left",  servoID = 9,  restPos = 90))
     robot.getNode("Shoulder_Y_Left").addChild(Servo_Node( label = "Elbow_X_Left",     servoID = 10, restPos = 60))
-    #robot.getNode("Elbow_X_Left").addChild(Servo_Node(    label = "Wrist_Y_Left",     servoID = 11))
-    #robot.getNode("Wrist_Y_Left").addChild(Servo_Node(    label = "Finger_1_Left",    servoID = 12))
-    #robot.getNode("Wrist_Y_Left").addChild(Servo_Node(    label = "Finger_2_Left",    servoID = 13))
-    #robot.getNode("Wrist_Y_Left").addChild(Servo_Node(    label = "Thumb_Rotate_Left",servoID = 14))
-    #robot.getNode("Thumb_Rotate_Left").addChild(label = "Thumb_1_Left",     servoID = 15))
+    robot.getNode("Elbow_X_Left").addChild(Servo_Node(    label = "Wrist_Y_Left",     servoID = 11))
+    robot.getNode("Wrist_Y_Left").addChild(Servo_Node(    label = "Finger_1_Left",    servoID = 12))
+    robot.getNode("Wrist_Y_Left").addChild(Servo_Node(    label = "Finger_2_Left",    servoID = 13))
+    robot.getNode("Wrist_Y_Left").addChild(Servo_Node(    label = "Thumb_Rotate_Left",servoID = 14))
+    robot.getNode("Thumb_Rotate_Left").addChild(Servo_Node(label = "Thumb_1_Left",    servoID = 15))
     #Right arm
-    robot.getNode("Body_Gyro").addChild(Servo_Node(         label = "Shoulder_X_Right",  kitAddress = 0x41, servoID = 8, restPos = 0))
+    robot.getNode("Body_Gyro").addChild(Servo_Node(         label = "Shoulder_X_Right", kitAddress = 0x41, servoID = 8, restPos = 0))
     robot.getNode("Shoulder_X_Right").addChild(Servo_Node( label = "Shoulder_Z_Right",  kitAddress = 0x41, servoID = 7, restPos = 135))
     robot.getNode("Shoulder_Z_Right").addChild(Servo_Node( label = "Shoulder_Y_Right",  kitAddress = 0x41, servoID = 6, restPos = 60))
     robot.getNode("Shoulder_Y_Right").addChild(Servo_Node( label = "Elbow_X_Right",     kitAddress = 0x41, servoID = 5, restPos = 100))
-    #robot.getNode("Elbow_X_Right").addChild(Servo_Node(    label = "Wrist_Y_Right",     kitID = 1, servoID = 11))
-    #robot.getNode("Wrist_Y_Right").addChild(Servo_Node(    label = "Finger_1_Right",    kitID = 1, servoID = 12))
-    #robot.getNode("Wrist_Y_Right").addChild(Servo_Node(    label = "Finger_2_Right",    kitID = 1, servoID = 13))
-    #robot.getNode("Wrist_Y_Right").addChild(Servo_Node(    label = "Thumb_Rotate_Right",kitID = 1, servoID = 14))
-    #robot.getNode("Thumb_Rotate_Right").addChild(Servo_Node(label = "Thumb_1_Right",     kitID = 1, servoID = 15))
+    robot.getNode("Elbow_X_Right").addChild(Servo_Node(    label = "Wrist_Y_Right",     kitAddress = 0x41, servoID = 11))
+    robot.getNode("Wrist_Y_Right").addChild(Servo_Node(    label = "Finger_1_Right",    kitAddress = 0x41, servoID = 12))
+    robot.getNode("Wrist_Y_Right").addChild(Servo_Node(    label = "Finger_2_Right",    kitAddress = 0x41, servoID = 13))
+    robot.getNode("Wrist_Y_Right").addChild(Servo_Node(    label = "Thumb_Rotate_Right",kitAddress = 0x41, servoID = 14))
+    robot.getNode("Thumb_Rotate_Right").addChild(Servo_Node(label = "Thumb_1_Right",    kitAddress = 0x41, servoID = 15))
     return robot

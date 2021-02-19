@@ -31,15 +31,18 @@ class Robot:
             self.lastUpdate = time.time()
             time.sleep(sleepDelay)
     
-    def initialize(self):
+    def engage(self):
         nodes = self.root.getList()
         for node in nodes:
-            node.initialize(self)
+            node.engage(self)
         self.ctrlThread  = threading.Thread(target=self.orcDriver, daemon=True)
         self.ctrlThread.start()
         
     def disengage(self):
         self.active = False
+        nodes = self.root.getList()
+        for node in nodes:
+            node.disengage(self)
         if(self.ctrlThread is not None and self.ctrlThread.is_alive()):
             self.ctrlThread.join()
         

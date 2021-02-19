@@ -7,7 +7,7 @@ camera = PiCamera()
 
 trigger_robot = RL.RoBoi()
 trigger_robot.printStructure(full = True)
-trigger_robot.initialize()
+trigger_robot.engage()
 
 time.sleep(5)
 trigger_robot.disengage()
