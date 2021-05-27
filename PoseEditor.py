@@ -100,4 +100,4 @@ class PoseEditor:
         loadPosButton = Button(IOFrame, text = "Load Pose", command = self.loadPose)
         loadPosButton.grid(column = coloumCount - 1, row = 0)
         IOFrame.grid(column = 0, row = 0)
-        self.robot.initialize()
+        self.robot.engage()
