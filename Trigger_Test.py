@@ -9,8 +9,20 @@ camera = PiCamera()
 trigger_robot = RL.RoBoi()
 trigger_robot.printStructure(full = True)
     
+trigger_robot.engage()
 
-pullStructure(trigger_robot)
-    
+trigger_robot.getNode("Neck_Pan").moveAngle(90, 1000)
+
+time.sleep(1)
+
+trigger_robot.getNode("Neck_Pan").moveAngle(10, 1000)
+
+time.sleep(1)
+
+trigger_robot.getNode("Neck_Pan").moveAngle(170, 1000)
+
+time.sleep(1)
+
+trigger_robot.disengage()
 
 print("end")

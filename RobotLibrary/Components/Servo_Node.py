@@ -12,6 +12,7 @@ class Servo_Node(Component):
     servoID = 0, restPos = 0.0, robot = None, actuation_range = 180, mirror = False):
         super(Servo_Node, self).__init__(label = label, parent = parent, robot = robot)
         #init Servokit PMW
+        self.robot = robot
         self.servoKit = None
         self.kitAddress = kitAddress
         try:
